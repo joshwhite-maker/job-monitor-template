@@ -1,0 +1,48 @@
+name: Daily Job Monitor
+
+on:
+  schedule:
+    # 7:00am UTC on weekdays — adjust to taste (https://crontab.guru)
+    - cron: "0 8 * * 1-5"
+  # Also allows you to trigger a run manually from the Actions tab
+  workflow_dispatch:
+
+# Needed so the action can commit seen.json back to the repo
+permissions:
+  contents: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run job monitor
+        env:
+          # Required — set these in repo Settings → Secrets and variables → Actions
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          # Optional — if set, each new role is scored against your profile
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python monitor.py
+
+      - name: Commit updated seen.json
+        run: |
+          git config user.name "job-monitor[bot]"
+          git config user.email "job-monitor@users.noreply.github.com"
+          git add seen.json
+          # Only commit if seen.json actually changed
+          git diff --staged --quiet || git commit -m "chore: update seen job IDs [skip ci]"
+          git push

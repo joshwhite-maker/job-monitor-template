@@ -1,0 +1,35 @@
+{
+  "role_keywords": [
+    "growth",
+    "strategy",
+    "product manager",
+    "engineering manager",
+    "head of",
+    "director",
+    "vp ",
+    "vice president",
+    "lead"
+  ],
+
+  "exclude_keywords": [
+    "internship",
+    "intern",
+    "sdr",
+    "sales development representative",
+    "customer support",
+    "recruiter"
+  ],
+
+  "location_keywords": [
+    "london",
+    "uk",
+    "united kingdom",
+    "remote",
+    "hybrid"
+  ],
+
+  "candidate_profile": "Example profile — replace this with your own. A short paragraph describing your background, the seniority and role types you're targeting, your key strengths, and anything you explicitly want to screen out. This text is sent to the scoring model verbatim, so be as specific as you want: sector experience, company stage preference, deal-breakers. Nothing here needs to be shareable — this file is gitignored by default so your real profile never gets committed.",
+
+  "_scoring_note": "Roles scoring at or above min_score_to_highlight are highlighted in the email.",
+  "min_score_to_highlight": 7
+}

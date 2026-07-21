@@ -1,0 +1,29 @@
+name: Weekly ATS Health Check
+
+on:
+  schedule:
+    - cron: '0 7 * * 0'   # Sundays at 7am UTC (8am BST)
+  workflow_dispatch:        # allow manual trigger from Actions tab
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run health check
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+        run: python health_check.py

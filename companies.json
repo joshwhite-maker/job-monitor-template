@@ -1,0 +1,65 @@
+[
+  {
+    "sector": "Fintech",
+    "name": "Monzo",
+    "ats": "greenhouse",
+    "token": "monzo",
+    "verified": true
+  },
+  {
+    "sector": "Fintech",
+    "name": "Stripe",
+    "ats": "greenhouse",
+    "token": "stripe",
+    "verified": true
+  },
+  {
+    "sector": "Fintech",
+    "name": "GoCardless",
+    "ats": "greenhouse",
+    "token": "gocardless",
+    "verified": true
+  },
+  {
+    "sector": "AI infrastructure",
+    "name": "Pinecone",
+    "ats": "ashby",
+    "token": "pinecone",
+    "verified": true
+  },
+  {
+    "sector": "AI infrastructure",
+    "name": "OpenAI",
+    "ats": "ashby",
+    "token": "openai",
+    "verified": true
+  },
+  {
+    "sector": "Marketplaces",
+    "name": "Deliveroo",
+    "ats": "ashby",
+    "token": "deliveroo",
+    "verified": true
+  },
+  {
+    "sector": "Marketplaces",
+    "name": "Airbnb",
+    "ats": "greenhouse",
+    "token": "airbnb",
+    "verified": true
+  },
+  {
+    "sector": "Developer tools",
+    "name": "Vercel",
+    "ats": "greenhouse",
+    "token": "vercel",
+    "verified": true
+  },
+  {
+    "sector": "Developer tools",
+    "name": "Linear",
+    "ats": "ashby",
+    "token": "linear",
+    "verified": true
+  }
+]

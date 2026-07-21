@@ -1,0 +1,16 @@
+# Your real config — copy config.example.json to config.json and fill it in.
+# Keeping this gitignored means your candidate profile and keyword lists
+# never end up in git history.
+config.json
+
+# Accumulates over time as the monitor runs; personal to your search.
+seen.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
