@@ -161,10 +161,15 @@ def poll_ashby(token: str) -> list[dict]:
             description = job.get("descriptionPlain", "") or strip_html(
                 job.get("descriptionHtml", "")
             )
+            # Ashby's "location" field is sometimes a plain string and
+            # sometimes a {"name": "..."} dict depending on the board.
+            loc = job.get("locationName") or job.get("location", "")
+            if isinstance(loc, dict):
+                loc = loc.get("name", "")
             jobs.append({
                 "id": f"ab-{token}-{job['id']}",
                 "title": job["title"],
-                "location": job.get("locationName", "") or job.get("location", {}).get("name", ""),
+                "location": loc,
                 "url": job.get("jobPostingUrl", job.get("jobUrl", "")),
                 "description": description,
             })
