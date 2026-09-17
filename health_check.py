@@ -14,6 +14,7 @@ Run on schedule: GitHub Actions - recommended weekly (Sunday 7am UTC)
 import json
 import os
 import smtplib
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -75,13 +76,54 @@ def check_ashby(token: str):
 
 
 def check_workable(token: str):
-    url = f"https://apply.workable.com/api/v3/accounts/{token}/jobs"
+    # FIXED 2026-08-24: old POST /api/v3/accounts/{token}/jobs path is
+    # retired for public callers (now requires an authenticated bearer
+    # token). Current public feed is this GET widget endpoint.
+    url = f"https://apply.workable.com/api/v1/widget/accounts/{token}"
     try:
-        resp = requests.post(url, json={"limit": 50}, timeout=10)
+        resp = requests.get(url, params={"details": "true"}, timeout=10)
         if resp.status_code == 200:
-            results = resp.json().get("results", [])
-            live = [r for r in results if r.get("state", "published") == "published"]
+            jobs = resp.json().get("jobs", [])
+            live = [
+                j for j in jobs
+                if not j.get("state") or j["state"] == "published"
+                or "region" in str(j.get("state", "")).lower()
+            ]
             return True, len(live), ""
+        return False, None, f"HTTP {resp.status_code}"
+    except Exception as e:
+        return False, None, str(e)[:80]
+
+
+def check_smartrecruiters(token: str):
+    url = f"https://api.smartrecruiters.com/v1/companies/{token}/postings"
+    try:
+        resp = requests.get(url, params={"limit": 1}, timeout=10)
+        if resp.status_code == 200:
+            return True, resp.json().get("totalFound", 0), ""
+        return False, None, f"HTTP {resp.status_code}"
+    except Exception as e:
+        return False, None, str(e)[:80]
+
+
+def check_personio(token: str):
+    url = f"https://{token}.jobs.personio.de/xml?language=en"
+    try:
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            root = ET.fromstring(resp.content)
+            return True, len(root.findall("position")), ""
+        return False, None, f"HTTP {resp.status_code}"
+    except Exception as e:
+        return False, None, str(e)[:80]
+
+
+def check_teamtailor(token: str):
+    url = f"https://{token}.teamtailor.com/jobs.json"
+    try:
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            return True, len(resp.json().get("items", [])), ""
         return False, None, f"HTTP {resp.status_code}"
     except Exception as e:
         return False, None, str(e)[:80]
@@ -92,6 +134,9 @@ CHECKERS = {
     "lever": check_lever,
     "ashby": check_ashby,
     "workable": check_workable,
+    "smartrecruiters": check_smartrecruiters,
+    "personio": check_personio,
+    "teamtailor": check_teamtailor,
 }
 
 

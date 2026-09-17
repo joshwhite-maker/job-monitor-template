@@ -6,6 +6,23 @@ config.json
 # Accumulates over time as the monitor runs; personal to your search.
 seen.json
 
+# Canonical web-discovered jobs (see grok/README.md) — accumulates as your
+# own Grok Scouts and reconciliation run, personal to your search.
+web_jobs.json
+
+# Tracks when the last digest was sent, so the email's "since last
+# digest" sections have a boundary. Personal, regenerates on first run.
+digest_state.json
+
+# Grok's raw research inbox and reconciliation's own bookkeeping — see
+# grok/README.md. grok/README.md itself IS committed (that's what keeps
+# the directory present on a fresh clone); everything else here
+# accumulates as your own scouts and reconciliation run.
+grok/company_discoveries.json
+grok/web_job_discoveries.json
+grok/web_watchlist.json
+grok/reconciliation_log.jsonl
+
 # Python
 __pycache__/
 *.pyc

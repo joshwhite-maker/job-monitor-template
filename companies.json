@@ -61,5 +61,26 @@
     "ats": "ashby",
     "token": "linear",
     "verified": true
+  },
+  {
+    "sector": "Fintech",
+    "name": "AccessPay",
+    "ats": "smartrecruiters",
+    "token": "AccessPay",
+    "verified": true
+  },
+  {
+    "sector": "Legal AI",
+    "name": "Legartis",
+    "ats": "personio",
+    "token": "legartis",
+    "verified": true
+  },
+  {
+    "sector": "Legal AI",
+    "name": "BRYTER",
+    "ats": "teamtailor",
+    "token": "bryter",
+    "verified": true
   }
 ]

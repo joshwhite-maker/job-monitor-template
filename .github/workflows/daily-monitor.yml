@@ -2,8 +2,13 @@ name: Daily Job Monitor
 
 on:
   schedule:
-    # 7:00am UTC on weekdays — adjust to taste (https://crontab.guru)
-    - cron: "0 8 * * 1-5"
+    # ~7am UTC on weekdays — adjust to taste (https://crontab.guru). Avoid
+    # scheduling exactly on the hour (e.g. "0 7 * * 1-5") if you can: every
+    # workflow on GitHub Actions with an on-the-hour cron queues at once,
+    # so runs can drift by hours under load. A few minutes' offset avoids
+    # that congestion. Cron is UTC-only and doesn't observe your local
+    # daylight saving — revisit this twice a year if the exact time matters.
+    - cron: "13 7 * * 1-5"
   # Also allows you to trigger a run manually from the Actions tab
   workflow_dispatch:
 
@@ -38,11 +43,14 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python monitor.py
 
-      - name: Commit updated seen.json
+      - name: Commit updated seen.json, web_jobs.json, and digest_state.json
         run: |
           git config user.name "job-monitor[bot]"
           git config user.email "job-monitor@users.noreply.github.com"
-          git add seen.json
-          # Only commit if seen.json actually changed
-          git diff --staged --quiet || git commit -m "chore: update seen job IDs [skip ci]"
+          git add seen.json web_jobs.json digest_state.json
+          # Only commit if something actually changed (seen.json IDs,
+          # web_jobs.json's emailed/emailed_date flags — see grok/README.md
+          # if you've set up the optional Grok layer — or the last-digest
+          # timestamp used for the email's "since last digest" sections)
+          git diff --staged --quiet || git commit -m "chore: update seen job IDs, web job email flags, and digest state [skip ci]"
           git push

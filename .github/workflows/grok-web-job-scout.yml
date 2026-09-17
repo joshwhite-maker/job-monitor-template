@@ -1,0 +1,59 @@
+name: Grok Website Job Scout
+
+# Works through grok/web_watchlist.json (companies the deterministic
+# monitor can't cover) and researches current openings via Grok's
+# web-search-grounded API, writing raw, unverified discoveries to
+# grok/web_job_discoveries.json. Never touches canonical data itself —
+# the "Reconcile Grok Discoveries" workflow (triggered automatically when
+# this one completes) does that.
+#
+# Only processes watchlist entries that are due (see is_due() in
+# scripts/grok_web_job_scout.py) — this does NOT crawl the full company
+# universe, by design (see grok/README.md).
+#
+# Requires the XAI_API_KEY secret. Without it, the script itself detects
+# the missing key and exits 0 as a deliberate no-op (GitHub Actions doesn't
+# allow a job-level `if:` to reference `secrets` directly, so this can't be
+# skipped any earlier than that — checkout/pip-install still run, but the
+# run finishes in seconds and makes no commit).
+#
+# *** The xAI API call in scripts/grok_web_job_scout.py is UNTESTED against
+# a live key — see that script's module docstring before trusting output. ***
+
+on:
+  schedule:
+    - cron: "34 8 * * 5"   # Fridays, offset off the hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Grok Website Job Scout
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+        run: python scripts/grok_web_job_scout.py
+
+      - name: Commit raw discoveries and watchlist bookkeeping
+        run: |
+          git config user.name "job-monitor[bot]"
+          git config user.email "job-monitor@users.noreply.github.com"
+          git add grok/web_job_discoveries.json grok/web_watchlist.json
+          git diff --staged --quiet || git commit -m "chore: Grok web job discoveries [skip ci]"
+          git push

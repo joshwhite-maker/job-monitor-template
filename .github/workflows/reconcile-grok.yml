@@ -1,0 +1,49 @@
+name: Reconcile Grok Discoveries
+
+# This is the deterministic half of the Grok subsystem: pure Python,
+# no external API/credentials required (unlike the two scout workflows).
+# It's safe to run automatically as soon as this file merges.
+#
+# Runs after either scout workflow completes (whether or not it actually
+# had a key configured — reconciling an empty/unchanged discoveries file
+# is a fast no-op), on a daily schedule as a safety net in case a scout
+# run's discoveries were pushed some other way, and on manual dispatch.
+
+on:
+  workflow_run:
+    workflows: ["Grok Company Scout", "Grok Website Job Scout"]
+    types: [completed]
+  schedule:
+    - cron: "17 6 * * 1-5"   # shortly after the daily monitor, offset off the hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run reconciliation
+        run: python scripts/reconcile_grok.py
+
+      - name: Commit updates
+        run: |
+          git config user.name "job-monitor[bot]"
+          git config user.email "job-monitor@users.noreply.github.com"
+          git add companies.json web_jobs.json seen.json grok/
+          git diff --staged --quiet || git commit -m "chore: reconcile Grok discoveries [skip ci]"
+          git push

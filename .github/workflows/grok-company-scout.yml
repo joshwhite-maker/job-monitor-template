@@ -1,0 +1,54 @@
+name: Grok Company Scout
+
+# Finds new companies via Grok's web-search-grounded API and writes raw,
+# unverified discoveries to grok/company_discoveries.json. Never touches
+# canonical data itself — scripts/grok_company_scout.py only appends
+# entries with status "new"; the "Reconcile Grok Discoveries" workflow
+# (triggered automatically when this one completes) does the rest.
+#
+# Requires the XAI_API_KEY secret (see grok/README.md). Without it, the
+# script itself detects the missing key and exits 0 as a deliberate no-op
+# — checkout/pip-install still run (GitHub Actions doesn't allow a job-level
+# `if:` to reference `secrets` directly), but the run finishes in seconds
+# and makes no commit.
+#
+# *** The xAI API call in scripts/grok_company_scout.py is UNTESTED against
+# a live key — see that script's module docstring before trusting output. ***
+
+on:
+  schedule:
+    - cron: "26 8 * * 3"   # Wednesdays, offset off the hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Grok Company Scout
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+        run: python scripts/grok_company_scout.py
+
+      - name: Commit raw discoveries
+        run: |
+          git config user.name "job-monitor[bot]"
+          git config user.email "job-monitor@users.noreply.github.com"
+          git add grok/company_discoveries.json
+          git diff --staged --quiet || git commit -m "chore: Grok company discoveries [skip ci]"
+          git push
